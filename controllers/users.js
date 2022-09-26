@@ -45,13 +45,7 @@ module.exports.getUserInfo = (req, res, next) => {
         name: user.name,
       });
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new BadRequest('Пользователь по указанному _id не найден.'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 module.exports.updateUser = (req, res, next) => {
@@ -73,7 +67,9 @@ module.exports.updateUser = (req, res, next) => {
       name: user.name,
     }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
+      if (err.code === 11000) {
+        next(new Conflicted('Пользователь с такой электронной почтой уже существует'));
+      } else if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при обновлении пользователя'));
       } else {
         next(err);
